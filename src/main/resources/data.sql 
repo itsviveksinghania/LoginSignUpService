@@ -1,0 +1,4 @@
+INSERT INTO users (username, password, enabled) VALUES
+('user1', '$2a$10$2Tj7VkV7gT9Hr6sBXMW/7uGRZvRUJh.ljbw6rBXoR4Ay6pynQO2Gq', true),
+('user2', '$2a$10$2Tj7VkV7gT9Hr6sBXMW/7uGRZvRUJh.ljbw6rBXoR4Ay6pynQO2Gq', true);
+-- Add more users as needed
