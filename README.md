@@ -21,7 +21,7 @@ This is a Spring Boot microservice implementing few REST API for user login and 
 
 
 ```bash
-git clone https://github.com/your-username/LoginSignUp.git
+https://github.com/itsviveksinghania/LoginSignUpService.git
 cd LoginSignUp
 ```
 
