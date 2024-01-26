@@ -2,8 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.model.*;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.UserService;
 import com.example.demo.util.JwtUtil;
-import com.example.demo.util.SecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +31,10 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private SecurityConfig securityConfig;
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    UserService userService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody User userRequest) {
@@ -47,7 +51,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SingUpResponse("Account exists! kindly login to proceed."));
         }
 
-        String hashedPassword = securityConfig.passwordEncoder().encode(userRequest.getPassword());
+        String hashedPassword = passwordEncoder.encode(userRequest.getPassword());
 
         User newUser = new User();
         newUser.setUsername(userRequest.getUsername());
@@ -70,16 +74,17 @@ public class AuthController {
         }
 
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-            );
+            // Authentication
+            Authentication authenticationRequest =
+                    UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getUsername(), loginRequest.getPassword());
 
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            // Create JWT
+            UserDetails userDetails = userService.loadUserByUsername(authenticationRequest.getName());
             String jwtToken = jwtUtil.generateToken(userDetails);
 
             return ResponseEntity.ok(new LoginResponse(jwtToken, "Logged in Successfully"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new SingUpResponse("Invalid credentials"));
         }
 
     }
